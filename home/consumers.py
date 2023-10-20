@@ -2,6 +2,8 @@ from channels.consumer import SyncConsumer
 from channels.exceptions import StopConsumer
 import json
 from asgiref.sync import async_to_sync
+from .models import *
+
 class MysyncConsumer(SyncConsumer):
 
     def websocket_connect(self, event):
@@ -21,6 +23,11 @@ class MysyncConsumer(SyncConsumer):
         data=json.loads(event['text'])
         print(data['msg'])
         rply=data['msg']
+        group=Group.objects.filter(g_name=self.group_name).first()
+
+        chat_obj=chat(content=rply,group=group)
+        chat_obj.save()
+
         async_to_sync(self.channel_layer.group_send)(
             self.group_name,
             {
