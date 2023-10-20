@@ -11,7 +11,6 @@ class chat(models.Model):
     time=models.DateTimeField(auto_now=True)
     group=models.ForeignKey(Group,on_delete=models.CASCADE)    
 
-    def __str__(self):
-        return self.content
+    
 
 # Create your models here.
