@@ -4,5 +4,5 @@ from . import consumers
 
 
 websocket_urlpatterns=[
-    path('ws/sc/',consumers.MysyncConsumer.as_asgi()),
+    path('ws/sc/<str:gname>/',consumers.MysyncConsumer.as_asgi()),
 ]

@@ -6,8 +6,10 @@ class MysyncConsumer(SyncConsumer):
 
     def websocket_connect(self, event):
         print("connected...",event) 
+        self.group_name=self.scope['url_route']['kwargs']['gname']
+        print(self.group_name)
         async_to_sync(self.channel_layer.group_add)(
-            'programmer',
+            self.group_name,
             self.channel_name
          )
         self.send({
@@ -20,7 +22,7 @@ class MysyncConsumer(SyncConsumer):
         print(data['msg'])
         rply=data['msg']
         async_to_sync(self.channel_layer.group_send)(
-            'programmer',
+            self.group_name,
             {
                 'type':'chat.message',
                 'message':rply
@@ -39,7 +41,7 @@ class MysyncConsumer(SyncConsumer):
     def websocket_disconnect(self, event):    
         print("disconnect")
         async_to_sync(self.channel_layer.group_discard)(
-            'programmer',
+            self.group_name,
             self.channel_name
          )
         raise StopConsumer()
