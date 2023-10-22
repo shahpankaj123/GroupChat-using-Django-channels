@@ -4,6 +4,7 @@ import json
 from asgiref.sync import async_to_sync
 from .models import *
 from channels.auth import AuthMiddleware
+from channels.generic.websocket import WebsocketConsumer
 
 class MysyncConsumer(SyncConsumer):
 
@@ -63,6 +64,50 @@ class MysyncConsumer(SyncConsumer):
         raise StopConsumer()
 
 
+class MyConsumer(WebsocketConsumer):
+    def connect(self):
+        print("connected..")
+        self.group_name=self.scope['url_route']['kwargs']['gname']
+        print(self.group_name)
+        async_to_sync(self.channel_layer.group_add)(
+            self.group_name,
+            self.channel_name
+         )
+        self.accept()
+      
+
+    def receive(self, text_data=None, bytes_data=None):
+        print('client msg:',text_data)
+        data=json.loads(text_data)
+        print(type(data))
+        rply=data['msg']
+        group=Group.objects.filter(g_name=self.group_name).first()
+        chat_obj=chat(content=rply,group=group)
+        chat_obj.save()
+
+        async_to_sync(self.channel_layer.group_send)(
+            self.group_name,
+              {
+                'type':'chat.message',
+                'message':rply
+              }
+            )
+        
+    def chat_message(self,event): 
+        self.send(
+            text_data=json.dumps({
+            'msg':event['message']
+            })
+        )
+        
+
+
+        #self.send(text_data="Hello world!")
+        
+        
+
+    def disconnect(self, close_code):
+        self.close()
      
 
         
